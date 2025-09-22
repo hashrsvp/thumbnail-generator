@@ -63,7 +63,9 @@ class ThumbnailGenerator:
                 })
             else:
                 # Use default credentials (if running on Google Cloud or with GOOGLE_APPLICATION_CREDENTIALS)
-                firebase_admin.initialize_app()
+                firebase_admin.initialize_app({
+                    'storageBucket': 'hash-836eb.appspot.com'
+                })
             
             self.bucket = storage.bucket()
             self.db = firestore.client()
@@ -346,6 +348,7 @@ def main():
     
     # Check for service account file
     service_account_paths = [
+        './firebase-key.json',  # GitHub Actions
         './serviceAccountKey.json',
         '../serviceAccountKey.json',
         './Hash/serviceAccountKey.json',
@@ -359,6 +362,11 @@ def main():
             service_account_path = path
             print(f"🔑 Using service account: {path}")
             break
+    
+    # Check for GOOGLE_APPLICATION_CREDENTIALS environment variable
+    if not service_account_path and os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
+        service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+        print(f"🔑 Using credentials from environment: {service_account_path}")
     
     if not service_account_path:
         print("⚠️ No service account key found. Make sure:")
