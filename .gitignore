@@ -1,0 +1,27 @@
+# Firebase Service Account Key (NEVER COMMIT)
+serviceAccountKey.json
+*.json
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backups directory
+backups/
+
+# Environment variables
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo

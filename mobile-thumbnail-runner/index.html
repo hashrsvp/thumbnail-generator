@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Thumbnail Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .button-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .button-primary:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .button-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .log.show {
+            display: block;
+        }
+        
+        .log-line {
+            margin-bottom: 2px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+            display: none;
+        }
+        
+        .spinner.show {
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .auth-form {
+            margin-bottom: 20px;
+        }
+        
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .auth-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .logo {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🖼️</div>
+        <h1>Hash Thumbnail Generator</h1>
+        <p class="subtitle">Mobile thumbnail processing for Firebase events</p>
+        
+        <!-- Authentication Form -->
+        <div id="authForm" class="auth-form">
+            <input type="password" id="authKey" class="auth-input" placeholder="Enter access key">
+            <button onclick="authenticate()" class="button button-primary">Authenticate</button>
+        </div>
+        
+        <!-- Main Interface -->
+        <div id="mainInterface" class="hidden">
+            <div class="status">
+                <div id="statusIcon" class="status-icon">⏳</div>
+                <div class="spinner" id="spinner"></div>
+                <div id="statusText" class="status-text">Ready to generate thumbnails</div>
+                <div id="progressText" class="progress">Click the button below to start</div>
+            </div>
+            
+            <button id="generateBtn" onclick="generateThumbnails()" class="button button-primary">
+                Generate Thumbnails
+            </button>
+            
+            <button id="checkStatusBtn" onclick="checkStatus()" class="button button-secondary">
+                Check Status
+            </button>
+            
+            <button onclick="showLogs()" class="button button-secondary">
+                Show/Hide Logs
+            </button>
+            
+            <div id="logContainer" class="log">
+                <div id="logs"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAuthenticated = false;
+        let currentJobId = null;
+        let logVisible = false;
+        
+        // Simple authentication
+        function authenticate() {
+            const key = document.getElementById('authKey').value;
+            // Simple key check - you can make this more secure
+            if (key === 'hash-thumbnails-2025') {
+                isAuthenticated = true;
+                document.getElementById('authForm').classList.add('hidden');
+                document.getElementById('mainInterface').classList.remove('hidden');
+                addLog('✅ Authentication successful');
+            } else {
+                alert('Invalid access key');
+            }
+        }
+        
+        async function generateThumbnails() {
+            if (!isAuthenticated) return;
+            
+            const btn = document.getElementById('generateBtn');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const progressText = document.getElementById('progressText');
+            const spinner = document.getElementById('spinner');
+            
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            statusIcon.textContent = '🔄';
+            statusText.textContent = 'Starting thumbnail generation...';
+            progressText.textContent = 'Initializing process';
+            spinner.classList.add('show');
+            
+            addLog('🚀 Starting thumbnail generation process...');
+            
+            try {
+                // Call the Firebase Cloud Function
+                const response = await fetch('/api/generate-thumbnails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer hash-thumbnails-2025'
+                    },
+                    body: JSON.stringify({
+                        action: 'generate',
+                        dryRun: false
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentJobId = result.jobId;
+                    statusText.textContent = 'Generation in progress...';
+                    progressText.textContent = `Job ID: ${currentJobId}`;
+                    addLog(`📋 Job started with ID: ${currentJobId}`);
+                    
+                    // Poll for status updates
+                    pollStatus();
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'Error occurred';
+                progressText.textContent = error.message;
+                addLog(`❌ Error: ${error.message}`);
+                
+                btn.disabled = false;
+                btn.textContent = 'Generate Thumbnails';
+                spinner.classList.remove('show');
+            }
+        }
+        
+        async function checkStatus() {
+            if (!currentJobId) {
+                alert('No active job to check');
+                return;
+            }
+            
+            addLog(`🔍 Checking status for job: ${currentJobId}`);
+            
+            try {
+                const response = await fetch(`/api/generate-thumbnails?jobId=${currentJobId}`, {
+                    headers: {
+                        'Authorization': 'Bearer hash-thumbnails-2025'
+                    }
+                });
+                
+                const result = await response.json();
+                updateStatus(result);
+                
+            } catch (error) {
+                addLog(`❌ Status check error: ${error.message}`);
+            }
+        }
+        
+        function pollStatus() {
+            const interval = setInterval(async () => {
+                if (!currentJobId) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/generate-thumbnails?jobId=${currentJobId}`, {
+                        headers: {
+                            'Authorization': 'Bearer hash-thumbnails-2025'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    updateStatus(result);
+                    
+                    if (result.status === 'completed' || result.status === 'failed') {
+                        clearInterval(interval);
+                    }
+                    
+                } catch (error) {
+                    addLog(`❌ Polling error: ${error.message}`);
+                    clearInterval(interval);
+                }
+            }, 3000); // Check every 3 seconds
+        }
+        
+        function updateStatus(result) {
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const progressText = document.getElementById('progressText');
+            const spinner = document.getElementById('spinner');
+            const btn = document.getElementById('generateBtn');
+            
+            switch (result.status) {
+                case 'running':
+                    statusIcon.textContent = '🔄';
+                    statusText.textContent = 'Processing thumbnails...';
+                    progressText.textContent = `Progress: ${result.progress || 'In progress'}`;
+                    addLog(`📊 ${result.progress || 'Processing continues...'}`);
+                    break;
+                    
+                case 'completed':
+                    statusIcon.textContent = '✅';
+                    statusText.textContent = 'Generation completed!';
+                    progressText.textContent = `Successfully processed ${result.processed || 0} thumbnails`;
+                    spinner.classList.remove('show');
+                    btn.disabled = false;
+                    btn.textContent = 'Generate Thumbnails';
+                    addLog(`🎉 Completed! Processed ${result.processed || 0} thumbnails`);
+                    if (result.errors > 0) {
+                        addLog(`⚠️ ${result.errors} errors encountered`);
+                    }
+                    currentJobId = null;
+                    break;
+                    
+                case 'failed':
+                    statusIcon.textContent = '❌';
+                    statusText.textContent = 'Generation failed';
+                    progressText.textContent = result.error || 'Unknown error';
+                    spinner.classList.remove('show');
+                    btn.disabled = false;
+                    btn.textContent = 'Generate Thumbnails';
+                    addLog(`💥 Failed: ${result.error || 'Unknown error'}`);
+                    currentJobId = null;
+                    break;
+                    
+                default:
+                    addLog(`ℹ️ Status: ${result.status}`);
+            }
+        }
+        
+        function showLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logVisible = !logVisible;
+            
+            if (logVisible) {
+                logContainer.classList.add('show');
+            } else {
+                logContainer.classList.remove('show');
+            }
+        }
+        
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.textContent = `[${timestamp}] ${message}`;
+            logs.appendChild(logLine);
+            
+            // Auto-scroll to bottom
+            logs.scrollTop = logs.scrollHeight;
+            
+            // Keep only last 50 log entries
+            while (logs.children.length > 50) {
+                logs.removeChild(logs.firstChild);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📱 Mobile thumbnail generator ready');
+        });
+    </script>
+</body>
+</html>
